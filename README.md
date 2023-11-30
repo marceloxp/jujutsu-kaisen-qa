@@ -10,6 +10,11 @@ source jujustu/bin/activate
 
 # install dependencies
 pip install -r requirements.txt
+#or 
+pip install langchain chromadb sentence-transformers
+
+# run on notebook
+!pip install -q streamlit
 
 # run app
 streamlit run app.py
