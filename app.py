@@ -55,7 +55,7 @@ def answer_question(prompt):
 
     qa = ai.get_qa(llm, retriever)
     result = qa({'query': prompt})
-    return result
+    return result['result']
 
 # User-provided prompt
 if prompt := st.chat_input():
