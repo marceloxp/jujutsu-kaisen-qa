@@ -14,7 +14,7 @@ pip install -r requirements.txt
 pip install langchain chromadb sentence-transformers
 
 # run on notebook
-!pip install -q streamlit
+pip install streamlit
 
 # run app
 streamlit run app.py

@@ -11,6 +11,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import Chroma
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from langchain.llms import HuggingFacePipeline
+from transformers import pipeline
 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
 # os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "caching_allocator"
@@ -33,11 +34,18 @@ def embed_documents(lang, docs):
     db = Chroma.from_documents(docs, embeddings)
     return db
 
-@st.cache_resource
-def get_llm(repo_id):
-    llm = HuggingFaceHub(repo_id=repo_id, model_kwargs={'temperature': 0.5, 'max_new_tokens': 250})
-    return llm
+def get_qa(repo_id, retriever):
+    llm = HuggingFaceHub(repo_id=repo_id, model_kwargs={'temperature': 0.5, 'max_new_tokens': 1024})
+    qa = RetrievalQA.from_chain_type(llm=llm, chain_type='stuff', retriever=retriever, return_source_documents=False)
+    return qa
 
-def get_qa(llm, retriever):
+def get_qa_v2(repo_id, retriever):
+    tokenizer = AutoTokenizer.from_pretrained(repo_id)
+    model = AutoModelForSeq2SeqLM.from_pretrained(repo_id)
+    pipe = pipeline("text2text-generation", model=model, tokenizer=tokenizer)
+    llm = HuggingFacePipeline(
+        pipeline = pipe,
+        model_kwargs={"temperature": 0.5, "max_length": 1024},
+    )
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type='stuff', retriever=retriever, return_source_documents=False)
     return qa
