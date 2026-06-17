@@ -1,0 +1,12 @@
+[
+    {
+        "url": "https://example.com",
+        "title": "Example Site",
+        "description": "This is an example site for demonstration purposes."
+    },
+    {
+        "url": "https://another-example.com",
+        "title": "Another Example",
+        "description": "Another site used as an example."
+    }
+]

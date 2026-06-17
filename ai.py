@@ -1,7 +1,11 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
 import streamlit as st
-import textwrap
-import random
 import pandas as pd
 from langchain import HuggingFaceHub
 from langchain.document_loaders import TextLoader
@@ -13,8 +17,11 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from langchain.llms import HuggingFacePipeline
 from transformers import pipeline
 
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
-# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "caching_allocator"
+if not os.environ.get("HUGGINGFACEHUB_API_TOKEN"):
+    raise EnvironmentError(
+        "Set the HUGGINGFACEHUB_API_TOKEN environment variable before running the app."
+    )
+
 import torch
 torch.cuda.empty_cache()
 
@@ -22,8 +29,8 @@ def load_documents(lang):
     loader = TextLoader("./sample_data/data-"+lang+".txt", encoding="utf-8")
     raw_documents = loader.load()
     text_splitter = CharacterTextSplitter(
-        chunk_size = 1000,
-        chunk_overlap = 200,
+        chunk_size = 512,
+        chunk_overlap = 64,
     )
     docs = text_splitter.split_documents(raw_documents)
     return docs
@@ -35,7 +42,7 @@ def embed_documents(lang, docs):
     return db
 
 def get_qa(repo_id, retriever):
-    llm = HuggingFaceHub(repo_id=repo_id, model_kwargs={'temperature': 0.5, 'max_new_tokens': 1024})
+    llm = HuggingFaceHub(repo_id=repo_id, model_kwargs={'temperature': 0.5, 'max_new_tokens': 1000})
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type='stuff', retriever=retriever, return_source_documents=False)
     return qa
 
@@ -45,7 +52,7 @@ def get_qa_v2(repo_id, retriever):
     pipe = pipeline("text2text-generation", model=model, tokenizer=tokenizer)
     llm = HuggingFacePipeline(
         pipeline = pipe,
-        model_kwargs={"temperature": 0.5, "max_length": 1024},
+        model_kwargs={"temperature": 0.5, "max_length": 1000},
     )
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type='stuff', retriever=retriever, return_source_documents=False)
     return qa
